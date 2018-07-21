@@ -1,0 +1,42 @@
+#! /usr/bin/env python
+
+__description__ = """
+Aggregate GREGOR's output into a dataframe. Further, calculate the zscore,
+stdev, and log2 fold change from the meta-data files.
+
+Prints to STDOUT."""
+
+import os
+import sys
+
+import pandas as pd
+from numpy import log2
+
+
+def aggregate_output(out_dir):
+    stats_summary_path = os.path.join(out_dir, 'StatisticSummaryFile.txt')
+    df = pd.read_csv(stats_summary_path, sep='\t')
+
+    def get_stdev(fname, root=out_dir):
+        nf = pd.read_csv(os.path.join(root, fname, 'neighborhoodFile.txt'),
+                         sep='\t', header=None, skiprows=1)
+        stdev = sum(nf[0]*nf[1]*(1-nf[1]))**0.5
+        return stdev
+
+    df['log2_foldChange'] = log2(df['InBed_Index_SNP']/df['ExpectNum_of_InBed_SNP'])
+    df['Stdev'] = df['Bed_File'].apply(get_stdev)
+    df['Zscore'] = (df['InBed_Index_SNP']-df['ExpectNum_of_InBed_SNP'])/df['Stdev']
+
+    return df
+
+
+if __name__ == '__main__':
+    import argparse
+
+    parser = argparse.ArgumentParser(description=__description__)
+    parser.add_argument('input',
+                        type=str,
+                        help="Path to GREGOR output directory")
+    args = parser.parse_args()
+
+    sys.stdout.write(aggregate_output(args.input).to_string(index=False))
