@@ -2,11 +2,13 @@
 
 # Capture UCSC Genome Browser Shot using their API
 # Equivalent to doing: View:PDF/PS
+#
+# Usage:
+#   captureGB <urls>
 
-(puts 'No URL'; exit) unless ARGV[0]
+(puts "Usage: captureGB <urls>\nPlease quote URLs."; exit) unless ARGV[0]
 
 ARGV.each_with_index do |u, i|
   url = u.gsub('hgTracks', 'hgRenderTracks')
   `curl -# '#{url}' -o screenshot_#{i}.png`
 end
-
