@@ -4,7 +4,7 @@ __description__ = """
 Aggregate GREGOR's output into a dataframe. Further, calculate the zscore,
 stdev, and log2 fold change from the meta-data files.
 
-Prints to STDOUT."""
+Prints to stdout."""
 
 import os
 import sys
@@ -34,9 +34,8 @@ if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser(description=__description__)
-    parser.add_argument('input',
-                        type=str,
+    parser.add_argument('input', type=str,
                         help="Path to GREGOR output directory")
     args = parser.parse_args()
 
-    sys.stdout.write(aggregate_output(args.input).to_string(index=False))
+    print(aggregate_output(args.input).to_string(index=False))

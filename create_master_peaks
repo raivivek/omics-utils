@@ -1,0 +1,17 @@
+#! /bin/bash
+
+# TheParkerLab
+# Vivek rai
+# GPLv3
+
+[[ -z $1 ]] && echo "Usage: PROG <dir-to-.broadPeak.gz-files>" && exit
+
+echo "Filters peak for FDR < 0.05, merges and sorts final BED output"
+echo "Given: $1; If correct, writes to current directory"
+
+cat $1/*.broadPeak.noblacklist.gz \
+  | awk '{if($9>=1.30102999566){print}}' \
+  | sort -k1,1 -k2n,2 \
+  | bedtools merge \
+  | sort -k1,1 -k2n,2 \
+  > master_peaks.bed

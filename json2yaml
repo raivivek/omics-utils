@@ -7,11 +7,11 @@ import yaml
 def jsontoyaml(file):
   with open(file, 'r') as f:
     _yaml = yaml.load(f)
-    sys.stdout.write(yaml.dump(_yaml, default_flow_style=False, indent=4))
+    print(yaml.dump(_yaml, default_flow_style=False, indent=4))
 
 
 if __name__ == '__main__':
   if len(sys.argv) < 2:
-    print("Usage: json2yaml <input.json>\nWrites to STDOUT.")
+    print("Exiting. Please provide input.")
     sys.exit(1)
   jsontoyaml(sys.argv[1])
