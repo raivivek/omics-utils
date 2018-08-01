@@ -1,0 +1,31 @@
+#! /usr/bin/env Rscript
+#
+# The Parker Lab, 2018
+# theparkerlab.org
+#
+# (c) Vivek Rai
+
+args = commandArgs(trailingOnly=TRUE)
+args_bed = args[1]
+
+if (args_bed == 'stdin' || args_bed == '-' || is.na(args_bed)) {
+  args_bed <- 'cat /dev/stdin'
+}
+
+bed_file <- data.table::fread(args_bed, header = F, showProgress = T)
+lengths <- bed_file$V3 - bed_file$V2
+
+summary_df <- data.frame(c("Lines",
+                           "Total Span (bp)",
+                           "Average element width (bp)",
+                           "Median width (bp)",
+                           "Max width (bp)",
+                           "Min width(bp)"),
+                         c(length(lengths),
+                           sum(as.numeric(lengths)),
+                           mean(lengths),
+                           median(lengths),
+                           max(lengths),
+                           min(lengths)))
+
+write.table(summary_df, row.names = F, quote = F, col.names = F)
