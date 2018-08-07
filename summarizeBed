@@ -5,27 +5,41 @@
 #
 # (c) Vivek Rai
 
-args = commandArgs(trailingOnly=TRUE)
-args_bed = args[1]
+# Summarizes a BED file using following metrics:
+# 1. Total peaks
+# 2. Total span (bp)
+# 3. Average width
+# 4. Median width
+# 5. Max width
+# 6. Min width
+#
+# Optionally, prints the same statistics per-chromosome if `--chr` is supplied
+# as an argument
+
+
+library(magrittr)
+
+args <- commandArgs(trailingOnly=TRUE)
+args_bed <- args[1]
+is_chr <- if (!is.na(args[2])) args[2] == '--chr' else FALSE
 
 if (args_bed == 'stdin' || args_bed == '-' || is.na(args_bed)) {
   args_bed <- 'cat /dev/stdin'
 }
 
 bed_file <- data.table::fread(args_bed, header = F, showProgress = T)
-lengths <- bed_file$V3 - bed_file$V2
+colnames(bed_file) <- c('chr', 'start', 'end')
+bed_file$lengths <- bed_file$end - bed_file$start
 
-summary_df <- data.frame(c("Lines",
-                           "Total Span (bp)",
-                           "Average element width (bp)",
-                           "Median width (bp)",
-                           "Max width (bp)",
-                           "Min width(bp)"),
-                         c(length(lengths),
-                           sum(as.numeric(lengths)),
-                           mean(lengths),
-                           median(lengths),
-                           max(lengths),
-                           min(lengths)))
+summary_df <- bed_file %>% 
+  `if` (is_chr, dplyr::group_by(., chr), .) %>%
+  dplyr::summarize("total_peaks" = n(),
+                   "total_span" = sum(as.numeric(lengths)),
+                   "average_width" = mean(lengths),
+                   "median_width" = median(lengths),
+                   "max_width" = max(lengths),
+                   "min_width" = min(lengths),
+                   ) %>%
+  dplyr::arrange(desc(total_peaks))
 
-write.table(summary_df, row.names = F, quote = F, col.names = F)
+write.table(summary_df, row.names = F, quote = F, sep = '\t')

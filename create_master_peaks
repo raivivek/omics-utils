@@ -4,14 +4,17 @@
 # Vivek rai
 # GPLv3
 
-[[ -z $1 ]] && echo "Usage: PROG <dir-to-.broadPeak.gz-files>" && exit
+echo "Filters peak for FDR < 0.05, merges and sorts final BED output" >&2
+echo "Reads from FILE or STDIN; writes to STDOUT" >&2
 
-echo "Filters peak for FDR < 0.05, merges and sorts final BED output"
-echo "Given: $1; If correct, writes to current directory"
+PROG=cat
 
-cat $1/*.broadPeak.noblacklist.gz \
+if [[ $1 =~ \.gz$  ]]; then
+  PROG=zcat
+fi
+
+$PROG ${1:-/dev/stdin} \
   | awk '{if($9>=1.30102999566){print}}' \
-  | sort -k1,1 -k2n,2 \
+  | sort -k1,1 -k2,2n \
   | bedtools merge \
-  | sort -k1,1 -k2n,2 \
-  > master_peaks.bed
+  | sort -k1,1 -k2,2n

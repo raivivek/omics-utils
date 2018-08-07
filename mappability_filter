@@ -1,0 +1,12 @@
+#! /bin/bash
+
+# The Parker Lab, 2018
+# Vivek Rai
+
+DAC=/lab/data/reference/human/hg19/annot/wgEncodeDacMapabilityConsensusExcludable.bed.gz
+DUKE=/lab/data/reference/human/hg19/annot/wgEncodeDukeMapabilityRegionsExcludable.bed.gz
+
+echo "Using $(basename $DAC) and $(basename $DUKE)" >&2
+echo "Requires BED file or waits for input from STDIN" >&2
+
+intersectBed -a ${1:-stdin} -b $DAC -v | intersectBed -a - -b $DUKE -v
