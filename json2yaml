@@ -2,16 +2,22 @@
 
 import sys
 import yaml
+import argh
+import os
 
 
-def jsontoyaml(file):
-  with open(file, 'r') as f:
-    _yaml = yaml.load(f)
+def jsontoyaml(input):
+    """ Convert JSON to YAML.
+
+    Specify FILE or input from STDIN.
+    """
+    if not os.path.exists(input):
+        print("File not found.")
+        sys.exit(1)
+        with open(input, 'r') as f:
+            _yaml = yaml.load(f)
     print(yaml.dump(_yaml, default_flow_style=False, indent=4))
 
 
 if __name__ == '__main__':
-  if len(sys.argv) < 2:
-    print("Exiting. Please provide input.")
-    sys.exit(1)
-  jsontoyaml(sys.argv[1])
+    argh.dispatch_command(jsontoyaml)

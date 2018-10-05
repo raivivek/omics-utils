@@ -19,10 +19,10 @@ def create_index_bed(bedfilename, annotfiles, annotdir):
     with open(bedfilename, 'w') as f:
         if annotfiles is not None:
             for bed_file in annotfiles:
-                f.write("{path}\n".format(path=bed_file))
+                f.write("{path}\n".format(path=os.path.abspath(bed_file)))
         elif annotdir is not None:
             for bed_file in glob.glob(os.path.join(annotdir + "*.bed")):
-                f.write("{path}\n".format(path=bed_file))
+                f.write("{path}\n".format(path=os.path.abspath(bed_file)))
         else:
             print("NO OPTIONS: generated skeleton config file (gregor.conf) in current dir")
 
@@ -39,8 +39,8 @@ def getopts():
                         help="""chr:pos formatted SNP files. IMPORTANT: filename should not contain '_'""")
     parser.add_argument('--indexbed', type=str, default='indexbed.txt',
                         help="""Name of file to be created with paths of annotfiles""")
-    parser.add_argument('--refdir', type=str, default='/lab/data/sw/GREGOR/1.4.0',
-                        help="""GREGOR reference. Default = /lab/data/sw/GREGOR/1.4.0 """)
+    parser.add_argument('--refdir', type=str, default='/lab/data/sw/GREGOR/1.4.0/0.7',
+                        help="""GREGOR reference. Default = /lab/data/sw/GREGOR/1.4.0/0.7 """)
     parser.add_argument('--population', type=str, default='EUR',
                         help="""Population. Default = EUR """)
     parser.add_argument('-r2', '--gregorR2Threshold', default='0.8',

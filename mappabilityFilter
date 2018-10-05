@@ -1,0 +1,47 @@
+#! /usr/bin/env ruby
+#
+# Vivek Rai
+# vivekrai@umich.edu
+# (c) Parker Lab
+#
+# July 26, 2018
+#
+
+require 'optparse'
+require 'ostruct'
+
+
+options = OpenStruct.new
+options.blacklist = [
+    '/lab/data/reference/human/hg19/annot/wgEncodeDacMapabilityConsensusExcludable.bed.gz',
+    '/lab/data/reference/human/hg19/annot/wgEncodeDukeMapabilityRegionsExcludable.bed.gz'
+  ]
+
+
+pargs = OptionParser.new do |opts|
+  opts.banner = <<~BANNER
+
+  USAGE: mappability_filter [BED] [-w] [-b]
+
+  Accepts input from a BED file (.gz allowed) or STDIN. Prints to STDOUT.
+
+  BANNER
+
+  # opts.on('-w', '--whitelist', Array, "Whitelist BED files") do |v|
+  #   options.whitelist = options.whitelist.push(v)
+  # end
+
+  opts.on('-b', '--blacklist', Array, "=MANDATORY", "Blacklist BED files") do |v|
+    options.blacklist = options.blacklist.push(v)
+  end
+end.parse!
+
+input = (STDIN.tty?) ? pargs.first : 'stdin'
+
+
+STDERR.syswrite <<-MSG
+Using blacklists:
+- #{options.blacklist.join "\n- "}
+MSG
+
+STDOUT.syswrite `intersectBed -a #{input} -b #{options.blacklist.join ' '} -v`

@@ -1,0 +1,48 @@
+#! /usr/bin/env python3
+#
+# Vivek Rai
+# vivekrai@umich.edu
+# (c) Parker Lab
+#
+# October 3, 2018
+
+# Given two BED file, report features in file B that do not overlap a features
+# in A +- "window".
+#
+# For example,
+#   `bed_window_overlap -a tss.bed -b peaks.bed -w 1000`
+# should return all features in b that do not overlap +- 1000bp features in A.
+# The opposite funcationality, where we are interested in features in A, are
+# available through `bedtools window` command.
+
+
+import argparse
+import subprocess
+import sys
+
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-a", required=True, help="BED file (features you overlap with)"
+    )
+    parser.add_argument(
+        "-b", required=True, help="BED file (features you want as output)"
+    )
+    parser.add_argument("-g", required=True, help="Genome (chrom-sizes)")
+    parser.add_argument(
+        "-w", type=int, default=1000, help="Window size (default 1000bp)"
+    )
+    parser.add_argument("-v", action="store_true", help="Complement windows")
+
+    args = parser.parse_args()
+
+    COMMAND = """
+      bedtools slop -i {a} -g {g} -b {w} | intersectBed -a - -b {b} -wb {v}
+    """.format(
+        a=args.a, b=args.b, g=args.g, v="-v" if (args.v) else "", w=args.w
+    )
+
+    cmd = subprocess.Popen(COMMAND, shell=True)
+    cmd.communicate()
