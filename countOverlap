@@ -28,7 +28,7 @@ def count_overlap(args):
     args["bams"] = " ".join(args["bams"])
     args["p"] = "-p" if args["p"] else ""
 
-    prefix = os.path.dirname(args["bams"][0])
+    #prefix = os.path.dirname(args["bams"][0])
     bed_prefix = os.path.basename(args["bed"])
 
     CMD = """
@@ -49,20 +49,16 @@ def count_overlap(args):
     print("(countOverlap) INFO: Preparing SAF file..")
     run("cat {} | bed2saf > {bp}.saf".format(args["bed"], bp=bed_prefix))
 
-    # run featureCounts
     print("(countOverlap) INFO: Running featureCounts..")
-    print(CMD)
     run(CMD)
 
+    #  | sed s~{prefix}/~~g     \
     PROCESS = """
         tail -n +2 {output}      \
         | cut -f1,5 --complement \
-        | sed s~{prefix}/~~g     \
         | sed s~.bam~~g          \
         | sponge {output}
-    """.format(
-        **args, prefix=prefix
-    )
+    """.format(**args)
 
     # process featureCounts output file
     print("(countOverlap) INFO: Processing featureCounts output..")

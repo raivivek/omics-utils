@@ -1,0 +1,67 @@
+#! /usr/bin/env Rscript
+#
+# Vivek Rai
+# vivekrai@umich.edu
+# (c) Parker Lab
+#
+# July 20, 2018
+#
+
+# Summarize a BED file
+#
+# It would be of interest to know following metrics given a BED-like file:
+#
+# - Total peaks
+# - Total span (bp)
+# - Average width
+# - Median width
+# - Max width
+# - Min width
+#
+# Optionally, prints the same statistics per-chromosome if `--chr/-c` is
+# supplied as an argument
+
+suppressPackageStartupMessages({
+  library(magrittr)
+  library(optparse)
+})
+
+parser <- OptionParser("summarize_bed [BED|STDIN] [options]")
+
+parser <- add_option(parser, c('-c', '--chr'),
+  action = 'store_true',
+  default = F,
+  help = "Print per chromosome statistics")
+
+args <- parse_args2(parser)
+
+bed <- args$args
+is_chr <- args$options$chr
+
+# if nothing supplied assume STDIN
+if (!length(bed) > 0) {
+  bed <- 'cat /dev/stdin'
+}
+
+bed_file <- data.table::fread(bed, header = F, showProgress = T)
+
+cols <- ncol(bed_file)
+
+if (cols < 3) exit(1) # fail if < 3 columns
+if (cols > 3) bed_file <- bed_file[, c(1:3)] # keep only first three columns
+
+colnames(bed_file) <- c('chr', 'start', 'end')
+bed_file$lengths <- bed_file$end - bed_file$start
+
+summary_df <- bed_file %>% 
+  `if` (is_chr, dplyr::group_by(., chr), .) %>%
+  dplyr::summarize("total_peaks" = n(),
+                   "total_span" = sum(as.numeric(lengths)),
+                   "average_width" = mean(lengths),
+                   "median_width" = median(lengths),
+                   "max_width" = max(lengths),
+                   "min_width" = min(lengths),
+                   ) %>%
+  dplyr::arrange(desc(total_peaks))
+
+write.table(summary_df, row.names = F, quote = F, sep = '\t')
